@@ -10,12 +10,12 @@ const io = new Server(server);
 const users = {};
 const neonColors = ["#ff007f", "#00ffff", "#ffcc00", "#ff6600", "#9933ff", "#ff3333"];
 
-// Serve static files from the 'public' folder
-app.use(express.static(path.join(__dirname, "public")));
+// Serve static files from the **current directory**
+app.use(express.static(__dirname));
 
-// Explicitly serve index.html on root route
+// Explicitly serve `index.html` on root route
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
+    res.sendFile(path.join(__dirname, "index.html"));
 });
 
 io.on("connection", (socket) => {
@@ -47,6 +47,7 @@ io.on("connection", (socket) => {
     });
 });
 
+// Use dynamic port for deployment (important for Render)
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
