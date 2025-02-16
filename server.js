@@ -10,20 +10,31 @@ const io = new Server(server);
 const users = {};
 const neonColors = ["#ff007f", "#00ffff", "#ffcc00", "#ff6600", "#9933ff", "#ff3333"];
 
-// Serve static files
+// Serve static files from the 'public' folder
 app.use(express.static(path.join(__dirname, "public")));
+
+// Explicitly serve index.html on root route
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 io.on("connection", (socket) => {
     console.log("A user connected");
 
     socket.on("new-user", (username) => {
-        const userColor = neonColors[Object.keys(users).length % neonColors.length]; // Assign a neon color
+        if (!username) return;
+
+        // Assign a random neon color
+        const userColor = neonColors[Math.floor(Math.random() * neonColors.length)];
         users[socket.id] = { username, color: userColor };
-        
+
+        // Notify others
         io.emit("message", { user: "🔔 System", message: `${username} joined`, color: "#fff" });
     });
 
     socket.on("message", (data) => {
+        if (!users[socket.id]) return;
+
         const { username, message } = data;
         io.emit("message", { user: username, message, color: users[socket.id].color });
     });
@@ -36,6 +47,7 @@ io.on("connection", (socket) => {
     });
 });
 
-server.listen(3000, () => {
-    console.log(`Server running at http://localhost:3000`);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
 });
